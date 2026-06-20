@@ -11,7 +11,7 @@ API_URL = "https://huggingface.co"
 HEADERS = {"Authorization": f"Bearer {HF_TOKEN}"}
 
 # Create a 'MotorFan_Archive' folder in your Google Drive if it doesn't exist
-folder_path = "archive"
+folder_path = "motorfan_archive"
 os.makedirs(folder_path, exist_ok=True)
 
 # Create a unique file name for today (e.g., motorfan_2026-06-20.txt)
