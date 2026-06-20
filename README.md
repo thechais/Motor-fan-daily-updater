@@ -1,0 +1,1 @@
+# Motor-fan-daily-updater
