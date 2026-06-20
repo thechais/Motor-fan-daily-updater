@@ -72,3 +72,51 @@ with open(file_path, "w", encoding="utf-8") as file:
         time.sleep(1)
 
 print(f"✅ Success! Today's updates saved to Google Drive at: MyDrive/MotorFan_Archive/motorfan_{today}.txt")
+
+# [Keep your existing translate, scrape, and summarize functions here]
+
+# --- EMAIL DELIVERY FUNCTION ---
+def send_email(email_content):
+    api_key = os.getenv("SENDGRID_API_KEY")
+    sender = os.getenv("SENDER_EMAIL")
+    receiver = os.getenv("RECEIVER_EMAIL")
+    
+    url = "https://sendgrid.com"
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+    data = {
+        "personalizations": [{"to": [{"email": receiver}]}],
+        "from": {"email": sender, "name": "MotorFan AI Daily"},
+        "subject": f"🏎️ Motor-Fan.jp Updates - {datetime.now().strftime('%Y-%m-%d')}",
+        "content": [{"type": "text/plain", "value": email_content}]
+    }
+    response = requests.post(url, json=data, headers=headers)
+    if response.status_code == 202:
+        print("📨 Daily email sent successfully!")
+    else:
+        print(f"❌ Email failed: {response.text}")
+
+# --- MAIN EXECUTION ---
+feed = feedparser.parse("https://motor-fan.jp")
+today = datetime.now().strftime("%Y-%m-%d")
+email_body = f"Good morning! Here are your translated Motor-Fan updates for {today}:\n\n"
+
+for entry in feed.entries[:3]:
+    print("🔄 Processing article...")
+    jp_title = entry.title
+    link = entry.link
+    
+    en_title = translate_text(jp_title)
+    jp_body = scrape_article_text(link)
+    en_body = translate_text(jp_body) if jp_body else ""
+    ai_summary = summarize_text(en_body) if len(en_body) > 100 else "No summary available."
+    
+    # Append this article to our massive text email block
+    email_body += f"📢 TITLE: {en_title}\n📝 SUMMARY: {ai_summary}\n🔗 LINK: {link}\n"
+    email_body += "="*40 + "\n\n"
+    time.sleep(1)
+
+# Send the compiled digest straight to your chosen inbox
+send_email(email_body)
